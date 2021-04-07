@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         recorder.release();
 
         audioFileNames.add(audioFileName);
-        audioItemAdapter.notifyDataSetChanged();
+        audioItemAdapter.notifyItemInserted(audioFileNames.size()-1);
     }
 
     private void createAudioFolder() {
