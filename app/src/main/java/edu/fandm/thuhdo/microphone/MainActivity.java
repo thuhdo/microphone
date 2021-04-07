@@ -83,59 +83,14 @@ public class MainActivity extends AppCompatActivity {
                 showAlertDialog(audioToRemove, position);
             }
         });
-        audioRV.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
 
+        audioRV.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
         queryAudioFiles();
     }
 
-    private void setBackgroundRed(int position) {
-        AudioItemAdapter.longClickItemIdx = position;
-        audioRV.getAdapter().notifyItemChanged(position);
-    }
-
-    private void showAlertDialog(String audioToRemove, int audioPos) {
-        new AlertDialog.Builder(MainActivity.this)
-                .setTitle("Delete")
-                .setMessage("Are you sure you want to remove " + audioToRemove + "?")
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // Continue with delete operation
-                        deleteAudio(audioToRemove, audioPos);
-                    }
-                })
-                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        setBackgroundDefault(audioPos);
-                    }
-                })
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .show();
-    }
-
-    private void deleteAudio(String audioToRemove, int deleteIdx) {
-        String filePath = FOLDER_PATH + "/" + audioToRemove;
-        File file = new File(filePath);
-        boolean deleted = file.delete();
-        if (deleted) {
-            updateDeletedAudioFiles(deleteIdx);
-            Toast.makeText(MainActivity.this, "Audio file successfully removed", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(MainActivity.this, "Can't delete audio file", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void updateDeletedAudioFiles(int deleteIdx) {
-        audioFileNames.remove(deleteIdx);
-        audioItemAdapter.notifyItemRemoved(deleteIdx);
-    }
-
-    private void setBackgroundDefault(int audioPos) {
-        AudioItemAdapter.longClickItemIdx = -1;
-        audioRV.getAdapter().notifyItemChanged(audioPos);
-        audioRV.getAdapter().notifyItemChanged(AudioItemAdapter.longClickItemIdx);
-    }
-
+    /**
+     * Starts the recording and sets the output file path
+     */
     private void startRecording() {
         recorder = new MediaRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -157,6 +112,20 @@ public class MainActivity extends AppCompatActivity {
         isRecording = true;
     }
 
+    /**
+     * Generates file name from current date time to the second
+     * @return a String in the form of "yyyy-MM-dd 'at' HH.mm.ss z.3gp" as the file name
+     */
+    private String fileNameFromDateTime() {
+        Date date = Calendar.getInstance().getTime();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd 'at' HH.mm.ss z");
+        String dateString = dateFormat.format(date);
+        return dateString;
+    }
+
+    /**
+     * Stops the recording and adds it to the list, releases the MediaRecorder
+     */
     private void stopRecording() {
         isRecording = false;
         recorder.stop();
@@ -166,6 +135,10 @@ public class MainActivity extends AppCompatActivity {
         updateAddedAudioFiles();
     }
 
+    /**
+     * Plays the selected audio
+     * @param fileName name of the file selected
+     */
     private void playAudio(String fileName) {
         player = new MediaPlayer();
         String filePath = FOLDER_PATH + "/" + fileName;
@@ -179,6 +152,84 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Helper method to show the AlertDialog, asking the user if they really want to delete the file
+     * and acting accordingly
+     * @param audioToRemove name of the file selected
+     * @param audioPos index of the file selected in the audioFileNames list
+     */
+    private void showAlertDialog(String audioToRemove, int audioPos) {
+        new AlertDialog.Builder(MainActivity.this)
+                .setTitle("Delete")
+                .setMessage("Are you sure you want to remove " + audioToRemove + "?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Continue with delete operation
+                        deleteAudio(audioToRemove, audioPos);
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Set the background of selected item from red to default
+                        setBackgroundDefault(audioPos);
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
+    /**
+     * Deletes selected audio
+     * @param audioToRemove name of the file selected
+     * @param deleteIdx index of the file to delete
+     */
+    private void deleteAudio(String audioToRemove, int deleteIdx) {
+        String filePath = FOLDER_PATH + "/" + audioToRemove;
+        File file = new File(filePath);
+        boolean deleted = file.delete();
+        if (deleted) {
+            updateDeletedAudioFiles(deleteIdx);
+            Toast.makeText(MainActivity.this, "Audio file successfully removed", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(MainActivity.this, "Can't delete audio file", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Query all audio files existing in the app-specfic folder. Only called in onCreate
+     */
+    private void queryAudioFiles() {
+        File folder = new File(FOLDER_PATH);
+        File[] files = folder.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                audioFileNames.add(file.getName());
+            }
+        }
+    }
+
+    /**
+     * Helper method to add new audio item to the RecyclerView and jumps to its row
+     */
+    private void updateAddedAudioFiles() {
+        audioFileNames.add(audioFileName);
+        audioItemAdapter.notifyItemInserted(audioFileNames.size()-1);
+        audioRV.scrollToPosition(audioItemAdapter.getItemCount()-1);
+    }
+
+    /**
+     * Helper method to delete an audio item from the RecyclerView
+     * @param deleteIdx index of deleted item
+     */
+    private void updateDeletedAudioFiles(int deleteIdx) {
+        audioFileNames.remove(deleteIdx);
+        audioItemAdapter.notifyItemRemoved(deleteIdx);
+    }
+
+    /**
+     * Creates a folder for all audios recorded by the app
+     */
     private void createAudioFolder() {
 
         File folder = new File(Environment.getExternalStorageDirectory(), "Microphone");
@@ -198,6 +249,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Asks for necessary permissions
+     */
     private void askForPermissions() {
         // asks permission for writing to external storage
         boolean hasWritePermissionToExternalStorage = ContextCompat.checkSelfPermission(this,
@@ -224,26 +278,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private String fileNameFromDateTime() {
-        Date date = Calendar.getInstance().getTime();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd 'at' HH.mm.ss z");
-        String dateString = dateFormat.format(date);
-        return dateString;
+    /**
+     * Notifies the AudioItemAdapter of newly long-pressed item to change background to red
+     * @param position position of the pressed item
+     */
+    private void setBackgroundRed(int position) {
+        AudioItemAdapter.longClickItemIdx = position;
+        audioRV.getAdapter().notifyItemChanged(position);
     }
 
-    private void queryAudioFiles() {
-        File folder = new File(FOLDER_PATH);
-        File[] files = folder.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                audioFileNames.add(file.getName());
-            }
-        }
-    }
-
-    private void updateAddedAudioFiles() {
-        audioFileNames.add(audioFileName);
-        audioItemAdapter.notifyItemInserted(audioFileNames.size()-1);
-        audioRV.scrollToPosition(audioItemAdapter.getItemCount()-1);
+    /**
+     * Notifies the AudioItemAdapter of an item no longer long-pressed to change background to default
+     * @param audioPos position of the pressed item
+     */
+    private void setBackgroundDefault(int audioPos) {
+        AudioItemAdapter.longClickItemIdx = -1; // sets to -1 so no item is qualified as being long-pressed
+        audioRV.getAdapter().notifyItemChanged(audioPos);
+        audioRV.getAdapter().notifyItemChanged(AudioItemAdapter.longClickItemIdx);
     }
 }
