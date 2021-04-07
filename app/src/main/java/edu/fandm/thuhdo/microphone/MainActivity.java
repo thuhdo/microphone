@@ -3,10 +3,11 @@ package edu.fandm.thuhdo.microphone;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.icu.text.CaseMap;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
 import android.media.MediaPlayer;
@@ -18,18 +19,29 @@ import android.view.View;
 import android.widget.ImageButton;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "Microphone App - MainActivity";
+    private boolean isRecording = false;
+    private static String FOLDER_PATH;
+    private List<String> audioFileNames;
+    private String audioFileName;
 
     private static MediaRecorder recorder;
     private static MediaPlayer mediaPlayer;
-    private ImageButton recordButton;
 
-    private boolean isRecording = false;
-    private static String FOLDER_PATH;
+    private ImageButton recordButton;
+    private RecyclerView audioRV;
+    private AudioItemAdapter audioItemAdapter;
+
+    public MainActivity() {
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,20 +64,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-    }
+        audioRV = findViewById(R.id.audioRV);
+        audioFileNames = new ArrayList<>();
+        audioItemAdapter = new AudioItemAdapter(getApplicationContext(), audioFileNames);
+        audioRV.setAdapter(audioItemAdapter);
+        audioRV.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
 
-    private void stopRecording() {
-        isRecording = false;
-        recorder.stop();
-        recorder.reset();
-        recorder.release();
+        queryAudioFiles();
     }
 
     private void startRecording() {
         recorder = new MediaRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        String filePath = FOLDER_PATH + "/" + fileNameFromDateTime() +".3gp";
+
+        audioFileName = fileNameFromDateTime() + ".3gp";
+        String filePath = FOLDER_PATH + "/" + audioFileName;
+
         recorder.setOutputFile(filePath);
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
@@ -77,6 +92,16 @@ public class MainActivity extends AppCompatActivity {
 
         recorder.start();
         isRecording = true;
+    }
+
+    private void stopRecording() {
+        isRecording = false;
+        recorder.stop();
+        recorder.reset();
+        recorder.release();
+
+        audioFileNames.add(audioFileName);
+        audioItemAdapter.notifyDataSetChanged();
     }
 
     private void createAudioFolder() {
@@ -99,12 +124,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void askForPermissions() {
-        // asks permission for external storage
-        boolean hasPermissionToExternalStorage = ContextCompat.checkSelfPermission(this,
+        // asks permission for writing to external storage
+        boolean hasWritePermissionToExternalStorage = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-        if (!hasPermissionToExternalStorage) {
+        if (!hasWritePermissionToExternalStorage) {
             ActivityCompat.requestPermissions(this,
                     new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE }, 1);
+        }
+
+        // asks permission for reading from external storage
+        boolean hasReadPermissionToExternalStorage = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        if (!hasReadPermissionToExternalStorage) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE }, 1);
         }
 
         // asks permission for audio recording
@@ -121,5 +154,15 @@ public class MainActivity extends AppCompatActivity {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd 'at' HH.mm.ss z");
         String dateString = dateFormat.format(date);
         return dateString;
+    }
+
+    private void queryAudioFiles() {
+        File folder = new File(FOLDER_PATH);
+        File[] files = folder.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                audioFileNames.add(file.getName());
+            }
+        }
     }
 }

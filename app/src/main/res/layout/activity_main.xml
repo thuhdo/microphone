@@ -15,4 +15,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@android:drawable/ic_btn_speak_now" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/audioRV"
+        android:layout_width="411dp"
+        android:layout_height="514dp"
+        android:layout_marginBottom="10dp"
+        android:padding="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/recordButton"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="0dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>
