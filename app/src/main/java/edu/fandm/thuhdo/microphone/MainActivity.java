@@ -100,8 +100,7 @@ public class MainActivity extends AppCompatActivity {
         recorder.reset();
         recorder.release();
 
-        audioFileNames.add(audioFileName);
-        audioItemAdapter.notifyItemInserted(audioFileNames.size()-1);
+        updateAudioFiles();
     }
 
     private void createAudioFolder() {
@@ -164,5 +163,11 @@ public class MainActivity extends AppCompatActivity {
                 audioFileNames.add(file.getName());
             }
         }
+    }
+
+    private void updateAudioFiles() {
+        audioFileNames.add(audioFileName);
+        audioItemAdapter.notifyItemInserted(audioFileNames.size()-1);
+        audioRV.scrollToPosition(audioItemAdapter.getItemCount()-1);
     }
 }
