@@ -17,6 +17,7 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -67,10 +68,20 @@ public class MainActivity extends AppCompatActivity {
         audioRV = findViewById(R.id.audioRV);
         audioFileNames = new ArrayList<>();
         audioItemAdapter = new AudioItemAdapter(getApplicationContext(), audioFileNames);
+        audioItemAdapter.setOnItemClickListener(new AudioItemAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View itemView, int position) {
+                playAudio();
+            }
+        });
         audioRV.setAdapter(audioItemAdapter);
         audioRV.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
 
         queryAudioFiles();
+    }
+
+    // TODO: implement audio playing on click
+    private void playAudio() {
     }
 
     private void startRecording() {
