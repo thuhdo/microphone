@@ -1,5 +1,6 @@
 package edu.fandm.thuhdo.microphone;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -7,8 +8,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.icu.text.CaseMap;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
 import android.media.MediaPlayer;
@@ -23,7 +24,6 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -41,10 +41,6 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton recordButton;
     private RecyclerView audioRV;
     private AudioItemAdapter audioItemAdapter;
-
-    public MainActivity() {
-    }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +65,9 @@ public class MainActivity extends AppCompatActivity {
 
         audioRV = findViewById(R.id.audioRV);
         audioFileNames = new ArrayList<>();
+
         audioItemAdapter = new AudioItemAdapter(getApplicationContext(), audioFileNames);
+        audioRV.setAdapter(audioItemAdapter);
         audioItemAdapter.setOnItemClickListener(new AudioItemAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View itemView, int position) {
@@ -77,10 +75,65 @@ public class MainActivity extends AppCompatActivity {
                 playAudio(audioToPlay);
             }
         });
-        audioRV.setAdapter(audioItemAdapter);
+        audioItemAdapter.setOnLongClickListener(new AudioItemAdapter.OnLongClickListener() {
+            @Override
+            public void onItemLongClick(View itemView, int position) {
+                setBackgroundRed(position);
+                String audioToRemove = audioFileNames.get(position);
+                showAlertDialog(audioToRemove, position);
+            }
+        });
         audioRV.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
 
         queryAudioFiles();
+    }
+
+    private void setBackgroundRed(int position) {
+        AudioItemAdapter.longClickItemIdx = position;
+        audioRV.getAdapter().notifyItemChanged(position);
+    }
+
+    private void showAlertDialog(String audioToRemove, int audioPos) {
+        new AlertDialog.Builder(MainActivity.this)
+                .setTitle("Delete")
+                .setMessage("Are you sure you want to remove " + audioToRemove + "?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Continue with delete operation
+                        deleteAudio(audioToRemove, audioPos);
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        setBackgroundDefault(audioPos);
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
+    private void deleteAudio(String audioToRemove, int deleteIdx) {
+        String filePath = FOLDER_PATH + "/" + audioToRemove;
+        File file = new File(filePath);
+        boolean deleted = file.delete();
+        if (deleted) {
+            updateDeletedAudioFiles(deleteIdx);
+            Toast.makeText(MainActivity.this, "Audio file successfully removed", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(MainActivity.this, "Can't delete audio file", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void updateDeletedAudioFiles(int deleteIdx) {
+        audioFileNames.remove(deleteIdx);
+        audioItemAdapter.notifyItemRemoved(deleteIdx);
+    }
+
+    private void setBackgroundDefault(int audioPos) {
+        AudioItemAdapter.longClickItemIdx = -1;
+        audioRV.getAdapter().notifyItemChanged(audioPos);
+        audioRV.getAdapter().notifyItemChanged(AudioItemAdapter.longClickItemIdx);
     }
 
     private void startRecording() {
@@ -110,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
         recorder.reset();
         recorder.release();
 
-        updateAudioFiles();
+        updateAddedAudioFiles();
     }
 
     private void playAudio(String fileName) {
@@ -188,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void updateAudioFiles() {
+    private void updateAddedAudioFiles() {
         audioFileNames.add(audioFileName);
         audioItemAdapter.notifyItemInserted(audioFileNames.size()-1);
         audioRV.scrollToPosition(audioItemAdapter.getItemCount()-1);
