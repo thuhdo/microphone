@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.icu.text.CaseMap;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
 import android.media.MediaPlayer;
@@ -20,6 +21,7 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -34,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private String audioFileName;
 
     private static MediaRecorder recorder;
-    private static MediaPlayer mediaPlayer;
+    private static MediaPlayer player;
 
     private ImageButton recordButton;
     private RecyclerView audioRV;
@@ -71,17 +73,14 @@ public class MainActivity extends AppCompatActivity {
         audioItemAdapter.setOnItemClickListener(new AudioItemAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View itemView, int position) {
-                playAudio();
+                String audioToPlay = audioFileNames.get(position);
+                playAudio(audioToPlay);
             }
         });
         audioRV.setAdapter(audioItemAdapter);
         audioRV.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
 
         queryAudioFiles();
-    }
-
-    // TODO: implement audio playing on click
-    private void playAudio() {
     }
 
     private void startRecording() {
@@ -112,6 +111,19 @@ public class MainActivity extends AppCompatActivity {
         recorder.release();
 
         updateAudioFiles();
+    }
+
+    private void playAudio(String fileName) {
+        player = new MediaPlayer();
+        String filePath = FOLDER_PATH + "/" + fileName;
+        try {
+            player.setDataSource(filePath);
+            player.prepare();
+            player.start();
+        } catch (IOException e) {
+            Toast.makeText(MainActivity.this , "Can't play the audio", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
     }
 
     private void createAudioFolder() {
