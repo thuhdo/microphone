@@ -92,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
      * Starts the recording and sets the output file path
      */
     private void startRecording() {
+        //recordButton.setBackgroundResource(R.drawable.record_button);
         recorder = new MediaRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
