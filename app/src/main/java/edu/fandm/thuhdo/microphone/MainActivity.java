@@ -92,7 +92,8 @@ public class MainActivity extends AppCompatActivity {
      * Starts the recording and sets the output file path
      */
     private void startRecording() {
-        //recordButton.setBackgroundResource(R.drawable.record_button);
+        setRecordButtonProperties(R.drawable.red_background_round, R.drawable.mic_more_red);
+
         recorder = new MediaRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
@@ -132,6 +133,8 @@ public class MainActivity extends AppCompatActivity {
         recorder.stop();
         recorder.reset();
         recorder.release();
+
+        setRecordButtonProperties(R.drawable.grey_background_round, R.drawable.mic_red);
 
         updateAddedAudioFiles();
     }
@@ -234,7 +237,8 @@ public class MainActivity extends AppCompatActivity {
      */
     private void createAudioFolder() {
 
-        File folder = new File(Environment.getExternalStorageDirectory(), "Microphone");
+        File folder = new File(MainActivity.this.getExternalFilesDir(null), "Microphone");
+        Log.d(TAG, "Folder path is " + folder.getAbsolutePath());
         boolean created = folder.mkdirs(); // creates folder if not exists
 
         if (created) {
@@ -296,5 +300,10 @@ public class MainActivity extends AppCompatActivity {
     private void setBackgroundDefault(int audioPos) {
         AudioItemAdapter.longClickItemIdx = -1; // sets to -1 so no item is qualified as being long-pressed
         audioRV.getAdapter().notifyItemChanged(audioPos);
+    }
+
+    private void setRecordButtonProperties(int background, int imageIcon) {
+        recordButton.setBackgroundResource(background);
+        recordButton.setImageResource(imageIcon);
     }
 }
