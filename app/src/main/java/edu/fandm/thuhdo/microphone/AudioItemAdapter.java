@@ -10,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
@@ -55,12 +56,10 @@ public class AudioItemAdapter extends RecyclerView.Adapter<AudioItemAdapter.View
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         String fileName = fileNames.get(position);
         holder.bind(fileName);
-        Log.d("AudioItemAdapter", "position " + position);
-        Log.d("AudioItemAdapter", "longClickItemIdx " + longClickItemIdx);
         if (position == longClickItemIdx) {
             holder.itemView.setBackgroundColor(Color.RED);
         } else {
-            holder.itemView.setBackgroundColor(ctx.getResources().getColor(android.R.color.background_light));
+            holder.itemView.setBackgroundColor(ContextCompat.getColor(ctx, R.color.design_default_color_background));
         }
     }
 

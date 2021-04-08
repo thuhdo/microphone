@@ -166,6 +166,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         // Continue with delete operation
                         deleteAudio(audioToRemove, audioPos);
+                        setBackgroundDefault(audioPos);
                     }
                 })
                 .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
@@ -294,6 +295,5 @@ public class MainActivity extends AppCompatActivity {
     private void setBackgroundDefault(int audioPos) {
         AudioItemAdapter.longClickItemIdx = -1; // sets to -1 so no item is qualified as being long-pressed
         audioRV.getAdapter().notifyItemChanged(audioPos);
-        audioRV.getAdapter().notifyItemChanged(AudioItemAdapter.longClickItemIdx);
     }
 }
