@@ -8,8 +8,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.animation.ObjectAnimator;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
 import android.media.MediaPlayer;
@@ -20,6 +23,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
+
+import com.google.android.material.animation.AnimationUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(View itemView, int position) {
                 String audioToPlay = audioFileNames.get(position);
+                setPlayAudioAnimation(itemView);
                 playAudio(audioToPlay);
             }
         });
@@ -259,22 +265,6 @@ public class MainActivity extends AppCompatActivity {
      * Asks for necessary permissions
      */
     private void askForPermissions() {
-        // asks permission for writing to external storage
-        boolean hasWritePermissionToExternalStorage = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-        if (!hasWritePermissionToExternalStorage) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE }, 1);
-        }
-
-        // asks permission for reading from external storage
-        boolean hasReadPermissionToExternalStorage = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-        if (!hasReadPermissionToExternalStorage) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE }, 1);
-        }
-
         // asks permission for audio recording
         boolean hasPermissionToAudioRecording = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
@@ -305,5 +295,13 @@ public class MainActivity extends AppCompatActivity {
     private void setRecordButtonProperties(int background, int imageIcon) {
         recordButton.setBackgroundResource(background);
         recordButton.setImageResource(imageIcon);
+    }
+
+    private void setPlayAudioAnimation(View v) {
+        int origColor =  v.getSolidColor();
+        ObjectAnimator oa = ObjectAnimator.ofArgb(v, "backgroundColor", origColor, Color.parseColor("#25B461"), origColor);
+        oa.setDuration(1000);
+        oa.setInterpolator(AnimationUtils.FAST_OUT_SLOW_IN_INTERPOLATOR);
+        oa.start();
     }
 }

@@ -19,7 +19,7 @@
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
             android:gravity="center_vertical"
-            android:src="@android:drawable/ic_media_play" />
+            android:src="@drawable/play_green" />
 
         <TextView
             android:id="@+id/fileName"
