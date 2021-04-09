@@ -58,8 +58,6 @@ public class AudioItemAdapter extends RecyclerView.Adapter<AudioItemAdapter.View
         holder.bind(fileName);
         if (position == longClickItemIdx) {
             holder.itemView.setBackgroundColor(Color.RED);
-        } else {
-            holder.itemView.setBackgroundColor(ContextCompat.getColor(ctx, R.color.design_default_color_background));
         }
     }
 

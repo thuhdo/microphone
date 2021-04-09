@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         audioRV = findViewById(R.id.audioRV);
         audioFileNames = new ArrayList<>();
 
-        audioItemAdapter = new AudioItemAdapter(getApplicationContext(), audioFileNames);
+        audioItemAdapter = new AudioItemAdapter(MainActivity.this, audioFileNames);
         audioRV.setAdapter(audioItemAdapter);
         audioItemAdapter.setOnItemClickListener(new AudioItemAdapter.OnItemClickListener() {
             @Override
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        audioRV.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        audioRV.setLayoutManager(new LinearLayoutManager(MainActivity.this));
         queryAudioFiles();
     }
 
