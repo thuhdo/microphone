@@ -35,6 +35,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "Microphone App - MainActivity";
+    boolean hasPermissionToAudioRecording;
     private boolean isRecording = false;
     private static String FOLDER_PATH;
     private List<String> audioFileNames;
@@ -52,7 +53,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        askForPermissions();
+        if (!hasPermissionToAudioRecording) {
+            askForPermissions();
+        }
         createAudioFolder();
 
         recordButton = findViewById(R.id.recordButton);
@@ -92,6 +95,14 @@ public class MainActivity extends AppCompatActivity {
 
         audioRV.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
         queryAudioFiles();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!hasPermissionToAudioRecording) {
+            askForPermissions();
+        }
     }
 
     /**
@@ -187,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 })
                 .setIcon(android.R.drawable.ic_dialog_alert)
+                .setCancelable(false)
                 .show();
     }
 
@@ -266,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void askForPermissions() {
         // asks permission for audio recording
-        boolean hasPermissionToAudioRecording = ContextCompat.checkSelfPermission(this,
+        hasPermissionToAudioRecording = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
         if (!hasPermissionToAudioRecording) {
             ActivityCompat.requestPermissions(this,
