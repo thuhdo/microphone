@@ -93,6 +93,12 @@ public class MainActivity extends AppCompatActivity {
 
         audioRV.setLayoutManager(new LinearLayoutManager(MainActivity.this));
         queryAudioFiles();
+
+        /* handles the case where alert dialog is opened, a row is red highlighted,
+        user rotates the phone, alert dialog is dismissed but the row is still red.
+        onCreate is called when orientation changes -> just reset the row to default background
+         */
+        setBackgroundDefault(AudioItemAdapter.longClickItemIdx);
     }
 
     @Override
@@ -185,7 +191,6 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         // Continue with delete operation
                         deleteAudio(audioToRemove, audioPos);
-                        setBackgroundDefault(audioPos);
                     }
                 })
                 .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
